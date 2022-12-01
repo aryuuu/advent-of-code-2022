@@ -54,25 +54,6 @@ fn alt_solution(foods: &Vec<u32>) -> u32 {
     result
 }
 
-fn alt_solution_alt(foods: &Vec<u32>) -> u32 {
-    let sums = foods
-        .iter()
-        .fold(vec![0], |mut acc: Vec<u32>, food: &u32| {
-            if *food == 0 {
-                acc.push(0);
-            } else {
-                let length = acc.len();
-                acc[length-1] += food;
-            }
-            acc
-        })
-        .iter()
-        .max()
-        .unwrap()
-        .to_owned();
-
-    sums
-}
 
 fn solution_part_2(foods: &Vec<u32>) -> u32 {
     let mut max = 0;
