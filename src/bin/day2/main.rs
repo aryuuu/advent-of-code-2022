@@ -10,16 +10,22 @@ fn main() {
 
     let result = solution(&matches);
     // let result_alt = alt_solution(&foods);
-    // let result_part_2 = solution_part_2(&foods);
+    let result_part_2 = solution_part_2(&matches);
     // let result_part_2_alt = alt_solution_part_2(&foods);
     println!("result: {}", result);
     // println!("result: {}", result_alt);
-    // println!("result_part_2: {}", result_part_2);
+    println!("result_part_2: {}", result_part_2);
     // println!("result_part_2_alt: {}", result_part_2_alt);
 }
 
 fn solution(matches: &Vec<Match>) -> usize {
     matches.iter().fold(0, |acc, val| acc + val.get_result())
+}
+
+fn solution_part_2(matches: &Vec<Match>) -> usize {
+    matches
+        .iter()
+        .fold(0, |acc, val| acc + val.get_result_part_2())
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -31,6 +37,10 @@ struct Match {
 impl Match {
     fn get_result(self) -> usize {
         self.ours.get_result(self.theirs)
+    }
+    fn get_result_part_2(self) -> usize {
+        // println!("{}", self.ours.get_result_part_2(self.theirs));
+        self.ours.get_result_part_2(self.theirs)
     }
 }
 
@@ -75,6 +85,29 @@ impl Hand {
             },
         }
     }
+
+    fn get_result_part_2(self, opponent: Hand) -> usize {
+        match self {
+            Hand::Rock(_) => match opponent {
+                // LOSE
+                Hand::Rock(_) => 3,
+                Hand::Paper(_) => 1,
+                Hand::Scissor(_) => 2,
+            },
+            Hand::Paper(_) => match opponent { // DRAW
+                // _ => val + 3
+                Hand::Rock(val) => val + 3,
+                Hand::Paper(val) => val + 3,
+                Hand::Scissor(val) => val + 3,
+            },
+            Hand::Scissor(_) => match opponent {
+                // WIN
+                Hand::Rock(_) => 2 + 6,
+                Hand::Paper(_) => 3 + 6,
+                Hand::Scissor(_) => 1 + 6,
+            },
+        }
+    }
 }
 
 impl FromStr for Hand {
@@ -108,15 +141,15 @@ mod tests {
     #[test]
     fn it_works() {
         let matches = vec![
-            Match{
+            Match {
                 theirs: Hand::Rock(1),
                 ours: Hand::Paper(2),
             },
-            Match{
+            Match {
                 theirs: Hand::Paper(2),
                 ours: Hand::Rock(1),
             },
-            Match{
+            Match {
                 theirs: Hand::Scissor(3),
                 ours: Hand::Scissor(3),
             },
@@ -124,5 +157,26 @@ mod tests {
 
         let result = solution(&matches);
         assert_eq!(result, 15);
+    }
+
+    #[test]
+    fn it_works_part_2() {
+        let matches = vec![
+            Match {
+                theirs: Hand::Rock(1),
+                ours: Hand::Paper(2),
+            },
+            Match {
+                theirs: Hand::Paper(2),
+                ours: Hand::Rock(1),
+            },
+            Match {
+                theirs: Hand::Scissor(3),
+                ours: Hand::Scissor(3),
+            },
+        ];
+
+        let result = solution_part_2(&matches);
+        assert_eq!(result, 12);
     }
 }
