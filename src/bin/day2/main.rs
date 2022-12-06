@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{fmt::write, str::FromStr, string::ParseError};
+use std::{str::FromStr, string::ParseError};
 
 fn main() {
     let matches = std::fs::read_to_string::<_>("./input/day2.txt")
