@@ -1,3 +1,6 @@
+#![feature(array_chunks)]
+#![feature(iter_array_chunks)]
+
 use std::collections::{HashMap, HashSet};
 
 const LOWER_BOUND: u8 = b'a' - 1;
@@ -5,19 +8,7 @@ const UPPER_BOUND: u8 = b'A' - 1;
 
 fn main() {
     println!("part 1: {}", solution("./input/day3.txt"));
-    // let rucksacks = std::fs::read_to_string::<_>("./input/day3.txt")
-    //     .unwrap()
-    //     .lines()
-    //     .map(|line| line.parse::<u32>().unwrap_or(0))
-    //     .collect::<Vec<u32>>();
-    // let result = solution(&foods);
-    // let result_alt = alt_solution(&foods);
-    // let result_part_2 = solution_part_2(&foods);
-    // let result_part_2_alt = alt_solution_part_2(&foods);
-    // println!("result: {}", result);
-    // println!("result: {}", result_alt);
-    // println!("result_part_2: {}", result_part_2);
-    // println!("result_part_2_alt: {}", result_part_2_alt);
+    println!("part 2: {}", solution_part_2("./input/day3.txt"));
 }
 
 fn solution(filename: &str) -> usize {
@@ -34,38 +25,44 @@ fn solution(filename: &str) -> usize {
                 .collect::<HashSet<char>>()
                 .into_iter()
                 .map(|c| {
-                    let result = if c.is_ascii_lowercase() {
+                    if c.is_ascii_lowercase() {
                         c as u8 - LOWER_BOUND
                     } else {
                         c as u8 - UPPER_BOUND + 26
-                    };
-                    return result;
+                    }
                 })
                 .map(|val| val as usize)
         })
         .sum::<usize>()
 }
 
-// #[derive(Debug)]
-// struct Rucksack {
-//     first_comparment: HashSet<char>,
-//     second_comparment: HashSet<char>,
-// }
-
-// impl Rucksack {
-//     // add code here
-//     // fn get_common_item(self) -> Vec<&char> {
-//     //     self.first_comparment
-//     //         .intersection(&self.second_comparment)
-//     //         .into_iter()
-//     //         .collect::<Vec<&char>>()
-//     // }
-// }
-
-// fn solution(rucksacks: Vec<HashSet<char>>) -> usize {
-//     unimplemented!()
-//     // rucksacks.iter().fold(, f)
-// }
+fn solution_part_2(filename: &str) -> usize {
+    std::fs::read_to_string(filename)
+        .unwrap()
+        .lines()
+        .array_chunks::<3>()
+        .flat_map(|group| {
+            group
+                .iter()
+                .flat_map(|line| line.chars().collect::<HashSet<char>>().into_iter())
+                .fold(HashMap::new(), |mut map: HashMap<char, u32>, c| {
+                    *map.entry(c).or_insert(0) += 1;
+                    map
+                })
+                .into_iter()
+                .filter(|(_, v)| *v == 3)
+        })
+        .map(|c| c.0)
+        .map(|c| {
+            if c.is_ascii_lowercase() {
+                c as u8 - LOWER_BOUND
+            } else {
+                c as u8 - UPPER_BOUND + 26
+            }
+         })
+        .map(|c| c as usize)
+        .sum::<usize>()
+}
 
 #[cfg(test)]
 mod tests {
@@ -73,10 +70,13 @@ mod tests {
 
     #[test]
     fn it_works() {
-        // let foods = vec![
-        //     1000, 2000, 3000, 0, 4000, 0, 5000, 6000, 0, 7000, 8000, 9000, 0, 10000,
-        // ];
         let result = solution("./input/day3.test.txt");
         assert_eq!(result, 157);
+    }
+
+    #[test]
+    fn it_works_part_2() {
+        let result = solution_part_2("./input/day3.test.txt");
+        assert_eq!(result, 70);
     }
 }
