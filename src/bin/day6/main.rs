@@ -3,7 +3,7 @@ use std::collections::HashSet;
 fn main() {
     let result = solution("./input/day6.txt");
     println!("result: {}", result);
-    let result_part_2 = solution_part_2("./input/day6.txt");
+    let result_part_2 = solution_part_2("./input/day6.txt", 14);
     println!("result_part_2: {}", result_part_2);
 }
 
@@ -27,7 +27,7 @@ fn solution(filename: &str) -> usize {
     1
 }
 
-fn solution_part_2(filename: &str) -> usize {
+fn solution_part_2(filename: &str, length: usize) -> usize {
     let signal = std::fs::read_to_string(filename)
         .unwrap()
         .chars()
@@ -35,12 +35,12 @@ fn solution_part_2(filename: &str) -> usize {
     for i in 0..signal.len() - 4 {
         let mut set = HashSet::<char>::new();
 
-        for j in i..i+14 {
+        for j in i..i+length {
             set.insert(signal[j]);
         }
 
-        if set.len() == 14 {
-            return i+14
+        if set.len() == length {
+            return i+length
         }
     }
     1
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn it_works_part_2() {
-        let result = solution_part_2("./input/day6.test.txt");
+        let result = solution_part_2("./input/day6.test.txt", 14);
         assert_eq!(result, 19);
     }
 }
