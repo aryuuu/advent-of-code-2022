@@ -3,6 +3,8 @@ use std::{collections::VecDeque, str::FromStr, string::ParseError};
 fn main() {
     let result = solution("./input/day5.txt");
     println!("result: {}", result);
+    let result_part_2 = solution_part_2("./input/day5.txt");
+    println!("result: {}", result_part_2);
 }
 
 #[derive(Debug)]
@@ -29,6 +31,7 @@ impl FromStr for Operation {
 #[derive(Debug)]
 struct Cargo {
     stacks: Vec<VecDeque<char>>,
+    temp_stack: VecDeque<char>,
     operations: Vec<Operation>,
 }
 
@@ -40,6 +43,31 @@ impl Cargo {
                     Some(val) => self.stacks[op.target].push_back(val),
                     None => continue,
                 }
+            }
+        });
+
+        let mut result = vec![];
+        self.stacks
+            .iter_mut()
+            .for_each(|stack| match stack.pop_back() {
+                Some(val) => result.push(val),
+                None => println!("huh"),
+            });
+        result.iter().collect()
+    }
+
+    fn solve_part_2(mut self) -> String {
+        self.operations.iter().for_each(|op| {
+            for _ in 0..op.amount {
+                match self.stacks[op.origin].pop_back() {
+                    Some(val) => self.temp_stack.push_back(val),
+                    None => continue,
+                }
+            }
+            // push to target
+            while !self.temp_stack.is_empty() {
+                let temp = self.temp_stack.pop_back().unwrap();
+                self.stacks[op.target].push_back(temp)
             }
         });
 
@@ -86,7 +114,7 @@ impl FromStr for Cargo {
             .map(|line| line.parse::<Operation>().unwrap())
             .collect::<Vec<_>>();
 
-        let cargo = Cargo { operations, stacks };
+        let cargo = Cargo { operations, stacks, temp_stack: VecDeque::new() };
 
         Ok(cargo)
     }
@@ -100,16 +128,29 @@ fn solution(filename: &str) -> String {
     cargo.solve()
 }
 
+fn solution_part_2(filename: &str) -> String {
+    let cargo = std::fs::read_to_string(filename)
+        .unwrap()
+        .parse::<Cargo>()
+        .unwrap();
+    cargo.solve_part_2()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn it_works() {
-        // let stacks = vec!["ZN".to_string(), "MCD".to_string(), "P".to_string()];
         let result = solution("./input/day5.test.txt");
 
         assert_eq!(result, "CMZ".to_string());
     }
-}
 
+    #[test]
+    fn it_works_part_2() {
+        let result = solution_part_2("./input/day5.test.txt");
+
+        assert_eq!(result, "MCD".to_string());
+    }
+}
