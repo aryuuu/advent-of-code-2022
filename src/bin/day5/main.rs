@@ -114,7 +114,11 @@ impl FromStr for Cargo {
             .map(|line| line.parse::<Operation>().unwrap())
             .collect::<Vec<_>>();
 
-        let cargo = Cargo { operations, stacks, temp_stack: VecDeque::new() };
+        let cargo = Cargo {
+            operations,
+            stacks,
+            temp_stack: VecDeque::new(),
+        };
 
         Ok(cargo)
     }
