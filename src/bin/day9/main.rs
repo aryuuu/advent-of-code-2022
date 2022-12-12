@@ -3,6 +3,8 @@ use std::collections::HashSet;
 fn main() {
     let result = solution("./input/day9.txt");
     println!("result: {result}");
+    let result = solution_part_2("./input/day9.txt");
+    println!("result: {result}");
 }
 
 fn solution(filename: &str) -> usize {
@@ -34,7 +36,40 @@ fn solution(filename: &str) -> usize {
     visited.len()
 }
 
-#[derive(Debug, Default)]
+fn solution_part_2(filename: &str) -> usize {
+    let binding = std::fs::read_to_string(filename).unwrap();
+    let motions = binding.lines().map(|line| {
+        let split = line.split_whitespace().collect::<Vec<_>>();
+        let step = split[1].parse::<usize>().unwrap();
+        (split[0], step)
+    });
+
+    let mut visited = HashSet::<String>::new();
+    visited.insert("0-0".to_string());
+
+    let mut knots = vec![Point::default(); 10];
+
+    for motion in motions {
+        for i in 0..(motion.1) {
+            knots[0].move_dir(motion.0);
+
+            for j in (1..knots.len()) {
+                if knots[j].is_touching(&knots[j-1]) {
+                    continue;
+                }
+
+                let lead = knots[j-1];
+                knots[j].chase(&lead);
+            }
+
+            visited.insert(format!("{}-{}", knots.last().unwrap().x, knots.last().unwrap().y));
+        }
+    }
+
+    visited.len()
+}
+
+#[derive(Debug, Default, Clone, Copy)]
 struct Point {
     x: i32,
     y: i32,
@@ -105,5 +140,11 @@ mod tests {
     fn it_works() {
         let result = solution("./input/day9.test.txt");
         assert_eq!(result, 13);
+    }
+
+    #[test]
+    fn it_works_part_2() {
+        let result = solution_part_2("./input/day9.test.txt");
+        assert_eq!(result, 1);
     }
 }
