@@ -22,7 +22,7 @@ fn solution(filename: &str) -> usize {
     let mut tail = Point::default();
 
     for motion in motions {
-        for i in 0..(motion.1) {
+        for _ in 0..(motion.1) {
             head.move_dir(motion.0);
             if tail.is_touching(&head) {
                 continue;
@@ -50,19 +50,23 @@ fn solution_part_2(filename: &str) -> usize {
     let mut knots = vec![Point::default(); 10];
 
     for motion in motions {
-        for i in 0..(motion.1) {
+        for _ in 0..(motion.1) {
             knots[0].move_dir(motion.0);
 
-            for j in (1..knots.len()) {
-                if knots[j].is_touching(&knots[j-1]) {
+            for j in 1..knots.len() {
+                if knots[j].is_touching(&knots[j - 1]) {
                     continue;
                 }
 
-                let lead = knots[j-1];
+                let lead = knots[j - 1];
                 knots[j].chase(&lead);
             }
 
-            visited.insert(format!("{}-{}", knots.last().unwrap().x, knots.last().unwrap().y));
+            visited.insert(format!(
+                "{}-{}",
+                knots.last().unwrap().x,
+                knots.last().unwrap().y
+            ));
         }
     }
 

@@ -72,8 +72,6 @@ fn solution_part_2(filename: &str) -> usize {
 
     let mut stack = vec![0];
     let mut all_dirs = vec![];
-    let mut max = 0;
-    // let mut total = 0;
     for line in output {
         // ignore root, ls 
         if line == "$ cd /" || line == "$ ls" {
@@ -85,12 +83,6 @@ fn solution_part_2(filename: &str) -> usize {
             if cmd[2] == ".." {
                 let curr_dir_size = stack.pop().unwrap();
                 all_dirs.push(curr_dir_size);
-                // if curr_dir_size > max && curr_dir_size <= 30000000 {
-                //     max = curr_dir_size;
-                // }
-                // if curr_dir_size <= 100_000 {
-                //     total += curr_dir_size;
-                // }
 
                 *stack.last_mut().unwrap() += curr_dir_size;
             } else {
