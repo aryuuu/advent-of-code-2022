@@ -1,8 +1,12 @@
-use std::{str::FromStr, string::ParseError};
+use std::{
+    str::{Chars, FromStr},
+    string::ParseError,
+};
 
 fn main() {
     let result = solution("./input/day10.txt");
     println!("result: {result}");
+    solution_part_2("./input/day10.txt");
 }
 
 fn solution(filename: &str) -> i32 {
@@ -14,19 +18,17 @@ fn solution(filename: &str) -> i32 {
 
     let mut timeline: Vec<i32> = vec![1];
 
-    instructions
-        .iter()
-        .for_each(|ins| match ins {
-            Instruction::Noop => {
-                let latest_x = timeline.last().unwrap();
-                timeline.push(latest_x.clone());
-            }
-            Instruction::Addx(val) => {
-                let latest_x = timeline.last().unwrap().clone();
-                timeline.push(latest_x);
-                timeline.push(latest_x + val);
-            }
-        });
+    instructions.iter().for_each(|ins| match ins {
+        Instruction::Noop => {
+            let latest_x = timeline.last().unwrap();
+            timeline.push(latest_x.clone());
+        }
+        Instruction::Addx(val) => {
+            let latest_x = timeline.last().unwrap().clone();
+            timeline.push(latest_x);
+            timeline.push(latest_x + val);
+        }
+    });
 
     timeline
         .into_iter()
@@ -37,6 +39,50 @@ fn solution(filename: &str) -> i32 {
             }
             acc
         })
+}
+
+fn solution_part_2(filename: &str) {
+    let instructions = std::fs::read_to_string(filename)
+        .unwrap()
+        .lines()
+        .map(|line| line.parse::<Instruction>().unwrap())
+        .collect::<Vec<_>>();
+
+    let mut x: i32 = 1;
+    let mut screen = vec!["".to_string(); 6];
+    let mut screen_row = 0;
+
+    instructions.iter().for_each(|ins| match ins {
+        Instruction::Noop => {
+            let cursor = (screen[screen_row].len()) as i32;
+            if cursor >= x - 1 && cursor <= x + 1 {
+                screen[screen_row].push_str("#");
+            } else {
+                screen[screen_row].push_str(".");
+            }
+
+            if screen[screen_row].len() % 40 == 0 {
+                screen_row += 1;
+            }
+        }
+        Instruction::Addx(val) => {
+            for _ in 0..2 {
+                let cursor = (screen[screen_row].len()) as i32;
+                if cursor >= x - 1 && cursor <= x + 1 {
+                    screen[screen_row].push_str("#");
+                } else {
+                    screen[screen_row].push_str(".");
+                }
+
+                if screen[screen_row].len() % 40 == 0 {
+                    screen_row += 1;
+                }
+            }
+            x += val;
+        }
+    });
+
+    screen.iter().for_each(|row| println!("{row}"));
 }
 
 #[derive(Debug)]
@@ -68,4 +114,10 @@ mod tests {
         let result = solution("./input/day10.test.txt");
         assert_eq!(result, 13140);
     }
+
+    // #[test]
+    // fn it_works_part_2() {
+    //     let result = solution_part_2("./input/day10.test.txt");
+    //     assert_eq!(result, 13140);
+    // }
 }
