@@ -1,6 +1,8 @@
 fn main() {
     let result = solution("./input/day13.txt");
     println!("result: {result}");
+    let result = solution_part_2("./input/day13.txt");
+    println!("result: {result}");
 }
 
 fn solution(filename: &str) -> usize {
@@ -12,6 +14,34 @@ fn solution(filename: &str) -> usize {
         .filter(|(_, pair)| pair[0] < pair[1])
         .map(|(idx, _)| idx + 1)
         .sum()
+}
+
+fn solution_part_2(filename: &str) -> usize {
+    // parse input
+    let packets = parse_part_2(filename);
+    // count the number of packet that is less than the first divider
+    let first_divider = parse_packet("[[2]]");
+    let second_divider = parse_packet("[[6]]");
+    let first_divider_count = packets.iter().fold(1, |mut acc, packet| {
+        if packet < &first_divider {
+            acc += 1;
+        }
+
+        acc
+    });
+    // count the number of packet that is less than the second divider
+    let second_divider_count = packets.iter().fold(2, |mut acc, packet| {
+        // we start at 2 because
+        // the second divider must be larger than the first
+        if packet < &second_divider {
+            acc += 1;
+        }
+
+        acc
+    });
+    // multiply the two
+    first_divider_count * second_divider_count
+    // profit
 }
 
 fn parse(filename: &str) -> Vec<[Packet; 2]> {
@@ -27,6 +57,14 @@ fn parse(filename: &str) -> Vec<[Packet; 2]> {
             [parse_packet(left), parse_packet(right)]
         })
         .collect()
+}
+
+fn parse_part_2(filename: &str) -> Vec<Packet> {
+    let input = std::fs::read_to_string(filename)
+        .unwrap()
+        .replace("\n\n", "\n");
+
+    input.lines().map(parse_packet).collect()
 }
 
 fn parse_packet(s: &str) -> Packet {
@@ -104,15 +142,13 @@ mod tests {
 
     #[test]
     fn it_works() {
-        // let lisa = vec![11, 22, 33, 44];
-        // let result: usize = lisa
-        //     .iter()
-        //     .enumerate()
-        //     .filter(|(idx, val)| **val < 30)
-        //     .map(|(idx, _)| idx + 1)
-        //     .sum();
-        // println!("result: {result}");
         let result = solution("./input/day13.test.txt");
         assert_eq!(result, 13);
+    }
+
+    #[test]
+    fn it_works_part_2() {
+        let result = solution_part_2("./input/day13.test.txt");
+        assert_eq!(result, 140);
     }
 }
