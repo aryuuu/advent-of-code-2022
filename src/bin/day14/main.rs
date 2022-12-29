@@ -6,6 +6,8 @@ use std::{
 
 fn main() {
     let result = solution("./input/day14.txt");
+    println!("result: {result}");
+    let result = solution_part_2("./input/day14.txt");
     println!("result: {result}")
 }
 
@@ -54,6 +56,60 @@ fn solution(filename: &str) -> usize {
         }
 
         count += 1;
+    }
+
+    count
+}
+
+fn solution_part_2(filename: &str) -> usize {
+    let input = std::fs::read_to_string(filename).unwrap();
+    let rock_paths = input
+        .lines()
+        .map(|line| {
+            line.split("->")
+                .map(|node| node.parse::<Coordinate>().unwrap())
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+
+    let mut grid = draw_grid_part_2(rock_paths);
+
+    let mut count = 0;
+    'generate: loop {
+        let mut new_sand_coor = Coordinate { x: 500, y: 0 };
+        'go_down: loop {
+            // if new_sand_coor.y == grid.len() - 1 {
+            //     break 'generate;
+            // }
+
+            match grid[new_sand_coor.y + 1][new_sand_coor.x] {
+                Cell::Air => {
+                    new_sand_coor.y += 1;
+                }
+                _ => match grid[new_sand_coor.y + 1][new_sand_coor.x - 1] {
+                    Cell::Air => {
+                        new_sand_coor.y += 1;
+                        new_sand_coor.x -= 1;
+                    }
+                    _ => match grid[new_sand_coor.y + 1][new_sand_coor.x + 1] {
+                        Cell::Air => {
+                            new_sand_coor.y += 1;
+                            new_sand_coor.x += 1;
+                        }
+                        _ => {
+                            grid[new_sand_coor.y][new_sand_coor.x] = Cell::Sand;
+                            break 'go_down;
+                        }
+                    },
+                },
+            }
+        }
+
+        count += 1;
+
+        if new_sand_coor.y == 0 {
+            break 'generate;
+        }
     }
 
     count
@@ -117,7 +173,7 @@ fn draw_grid_part_2(rock_paths: Vec<Vec<Coordinate>>) -> Vec<Vec<Cell>> {
         })
     });
 
-    let mut grid = vec![vec![Cell::Air; max_x + 2]; max_y + 2];
+    let mut grid = vec![vec![Cell::Air; max_x + max_y + 2]; max_y + 3];
     // fill grid with rocks
     rock_paths.iter().for_each(|path| {
         let windows = path.windows(2);
@@ -142,6 +198,11 @@ fn draw_grid_part_2(rock_paths: Vec<Vec<Coordinate>>) -> Vec<Vec<Cell>> {
         }
     });
 
+    // set the floor
+    for j in 0..grid[0].len() {
+        grid[max_y+2][j] = Cell::Rock;
+    }
+
     grid
 }
 
@@ -149,12 +210,6 @@ fn draw_grid_part_2(rock_paths: Vec<Vec<Coordinate>>) -> Vec<Vec<Cell>> {
 struct Coordinate {
     x: usize,
     y: usize,
-}
-
-impl Coordinate {
-    fn down_options(&self) -> Vec<Self> {
-        unimplemented!();
-    }
 }
 
 impl FromStr for Coordinate {
@@ -201,9 +256,9 @@ mod tests {
         assert_eq!(result, 24);
     }
 
-    // #[test]
-    // fn it_works_part_2() {
-    //     let result = solution_part_2("./input/day14.test.txt");
-    //     assert_eq!(result, 93);
-    // }
+    #[test]
+    fn it_works_part_2() {
+        let result = solution_part_2("./input/day14.test.txt");
+        assert_eq!(result, 93);
+    }
 }
