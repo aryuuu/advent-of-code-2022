@@ -10,11 +10,6 @@ fn main() {
 }
 
 fn solution(filename: &str) -> usize {
-    // the goal is to count the number of grain of sand until the next grain fall below the lowest
-    // rock
-    // the sand drop from 500, 0
-    //
-    // parse input
     let input = std::fs::read_to_string(filename).unwrap();
     let rock_paths = input
         .lines()
@@ -24,52 +19,14 @@ fn solution(filename: &str) -> usize {
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
-    // get the max x and y
-    let mut max_x = 0;
-    let mut max_y = 0;
 
-    rock_paths.iter().for_each(|path| {
-        path.iter().for_each(|coor| {
-            if coor.x > max_x {
-                max_x = coor.x
-            }
-            if coor.y > max_y {
-                max_y = coor.y
-            }
-        })
-    });
-    // draw map
-    let mut grid = vec![vec![Cell::Air; max_x + 2]; max_y + 2];
-    // fill grid with rocks
-    rock_paths.iter().for_each(|path| {
-        let windows = path.windows(2);
-        for window in windows {
-            if window[0].x < window[1].x {
-                for i in window[0].x..=window[1].x {
-                    grid[window[0].y][i] = Cell::Rock;
-                }
-            } else if window[0].x > window[1].x {
-                for i in window[1].x..=window[0].x {
-                    grid[window[0].y][i] = Cell::Rock;
-                }
-            } else if window[0].y < window[1].y {
-                for j in window[0].y..=window[1].y {
-                    grid[j][window[0].x] = Cell::Rock;
-                }
-            } else if window[0].y > window[1].y {
-                for j in window[1].y..=window[0].y {
-                    grid[j][window[0].x] = Cell::Rock;
-                }
-            }
-        }
-    });
+    let mut grid = draw_grid(rock_paths);
 
-    // loop for generating new sand
     let mut count = 0;
     'generate: loop {
         let mut new_sand_coor = Coordinate { x: 500, y: 0 };
         'go_down: loop {
-            if new_sand_coor.y > max_y {
+            if new_sand_coor.y == grid.len() - 1 {
                 break 'generate;
             }
 
@@ -97,19 +54,107 @@ fn solution(filename: &str) -> usize {
         }
 
         count += 1;
-
-        if new_sand_coor.y > max_y {
-            break 'generate;
-        }
     }
 
     count
+}
+
+fn draw_grid(rock_paths: Vec<Vec<Coordinate>>) -> Vec<Vec<Cell>> {
+    let mut max_x = 0;
+    let mut max_y = 0;
+
+    rock_paths.iter().for_each(|path| {
+        path.iter().for_each(|coor| {
+            if coor.x > max_x {
+                max_x = coor.x
+            }
+            if coor.y > max_y {
+                max_y = coor.y
+            }
+        })
+    });
+
+    let mut grid = vec![vec![Cell::Air; max_x + 2]; max_y + 2];
+    // fill grid with rocks
+    rock_paths.iter().for_each(|path| {
+        let windows = path.windows(2);
+        for window in windows {
+            if window[0].x < window[1].x {
+                for i in window[0].x..=window[1].x {
+                    grid[window[0].y][i] = Cell::Rock;
+                }
+            } else if window[0].x > window[1].x {
+                for i in window[1].x..=window[0].x {
+                    grid[window[0].y][i] = Cell::Rock;
+                }
+            } else if window[0].y < window[1].y {
+                for j in window[0].y..=window[1].y {
+                    grid[j][window[0].x] = Cell::Rock;
+                }
+            } else if window[0].y > window[1].y {
+                for j in window[1].y..=window[0].y {
+                    grid[j][window[0].x] = Cell::Rock;
+                }
+            }
+        }
+    });
+
+    grid
+}
+
+fn draw_grid_part_2(rock_paths: Vec<Vec<Coordinate>>) -> Vec<Vec<Cell>> {
+    let mut max_x = 0;
+    let mut max_y = 0;
+
+    rock_paths.iter().for_each(|path| {
+        path.iter().for_each(|coor| {
+            if coor.x > max_x {
+                max_x = coor.x
+            }
+            if coor.y > max_y {
+                max_y = coor.y
+            }
+        })
+    });
+
+    let mut grid = vec![vec![Cell::Air; max_x + 2]; max_y + 2];
+    // fill grid with rocks
+    rock_paths.iter().for_each(|path| {
+        let windows = path.windows(2);
+        for window in windows {
+            if window[0].x < window[1].x {
+                for i in window[0].x..=window[1].x {
+                    grid[window[0].y][i] = Cell::Rock;
+                }
+            } else if window[0].x > window[1].x {
+                for i in window[1].x..=window[0].x {
+                    grid[window[0].y][i] = Cell::Rock;
+                }
+            } else if window[0].y < window[1].y {
+                for j in window[0].y..=window[1].y {
+                    grid[j][window[0].x] = Cell::Rock;
+                }
+            } else if window[0].y > window[1].y {
+                for j in window[1].y..=window[0].y {
+                    grid[j][window[0].x] = Cell::Rock;
+                }
+            }
+        }
+    });
+
+    grid
 }
 
 #[derive(Debug)]
 struct Coordinate {
     x: usize,
     y: usize,
+}
+
+impl Coordinate {
+    fn down_options(&self) -> Vec<Self> {
+        unimplemented!();
+    }
 }
 
 impl FromStr for Coordinate {
@@ -155,4 +200,10 @@ mod tests {
         let result = solution("./input/day14.test.txt");
         assert_eq!(result, 24);
     }
+
+    // #[test]
+    // fn it_works_part_2() {
+    //     let result = solution_part_2("./input/day14.test.txt");
+    //     assert_eq!(result, 93);
+    // }
 }
