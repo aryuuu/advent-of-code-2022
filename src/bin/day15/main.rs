@@ -13,26 +13,50 @@ fn solution(filename: &str, row: i32) -> usize {
         .map(|line| line.parse::<Pair>().unwrap())
         .collect::<Vec<Pair>>();
 
-    let mut columns = HashSet::<i32>::new();
+    let mut ranges = vec![];
 
     pairs.iter().for_each(|pair| {
         let covered_columns = pair.get_col_coverage_in_row(row);
-        for col in covered_columns {
-            columns.insert(col);
-        }
+        ranges.push(covered_columns);
     });
 
-    pairs.iter().for_each(|pair| {
-        // remove col of beacons in row from set
-        if pair.beacon.y == row {
-            columns.remove(&pair.beacon.x);
-        }
-    });
+    ranges.sort_unstable_by_key(|range| range.start);
 
-    columns.len()
+    let mut merged_ranges = vec![ranges[0].clone()];
+
+    for next in &ranges[1..] {
+        let last_idx = merged_ranges.len() - 1;
+        let last = &merged_ranges[last_idx];
+
+        if next.start < last.end || last.end == next.start {
+            if next.end > last.end {
+                let old = &merged_ranges[last_idx];
+                let new = old.start..next.end;
+                merged_ranges[last_idx] = new;
+            }
+        } else {
+            merged_ranges.push(next.clone());
+        }
+    }
+
+    let covered = merged_ranges
+        .iter()
+        .map(|range| range.end - range.start)
+        .sum::<i32>() as usize;
+
+    let mut beacons = HashSet::new();
+    pairs
+        .iter()
+        .map(|pair| pair.beacon)
+        .filter(|beacon| beacon.y == row)
+        .for_each(|beacon| {
+            beacons.insert(beacon.x);
+        });
+
+    covered - beacons.len()
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Pair {
     sensor: Coordinate,
     beacon: Coordinate,
@@ -107,7 +131,7 @@ impl FromStr for Pair {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Coordinate {
     x: i32,
     y: i32,
@@ -128,4 +152,10 @@ mod tests {
         let result = solution("./input/day15.test.txt", 10);
         assert_eq!(result, 26);
     }
+
+    // #[test]
+    // fn it_works_part_2() {
+    //     let result = solution_part_2("./input/day15.test.txt");
+    //     assert_eq!(result, 56000011);
+    // }
 }
