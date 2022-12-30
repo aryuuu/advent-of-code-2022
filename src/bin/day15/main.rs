@@ -3,6 +3,8 @@ use std::{collections::HashSet, str::FromStr, string::ParseError};
 fn main() {
     let result = solution("./input/day15.txt", 2_000_000);
     println!("result: {result}");
+    let result = solution_part_2("./input/day15.txt", 4_000_000);
+    println!("result: {result}");
 }
 
 fn solution(filename: &str, row: i32) -> usize {
@@ -13,13 +15,29 @@ fn solution(filename: &str, row: i32) -> usize {
         .map(|line| line.parse::<Pair>().unwrap())
         .collect::<Vec<Pair>>();
 
-    let mut ranges = vec![];
+    let merged_ranges = get_covered_ranges(&pairs, row);
+    let covered = merged_ranges
+        .iter()
+        .map(|range| range.end - range.start)
+        .sum::<i32>() as usize;
 
-    pairs.iter().for_each(|pair| {
-        let covered_columns = pair.get_col_coverage_in_row(row);
-        ranges.push(covered_columns);
-    });
+    let mut beacons = HashSet::new();
+    pairs
+        .iter()
+        .map(|pair| pair.beacon)
+        .filter(|beacon| beacon.y == row)
+        .for_each(|beacon| {
+            beacons.insert(beacon.x);
+        });
 
+    covered - beacons.len()
+}
+
+fn get_covered_ranges(pairs: &[Pair], row: i32) -> Vec<std::ops::Range<i32>> {
+    let mut ranges = pairs
+        .iter()
+        .map(|pair| pair.get_col_coverage_in_row(row))
+        .collect::<Vec<_>>();
     ranges.sort_unstable_by_key(|range| range.start);
 
     let mut merged_ranges = vec![ranges[0].clone()];
@@ -39,21 +57,36 @@ fn solution(filename: &str, row: i32) -> usize {
         }
     }
 
-    let covered = merged_ranges
-        .iter()
-        .map(|range| range.end - range.start)
-        .sum::<i32>() as usize;
+    merged_ranges
+}
 
-    let mut beacons = HashSet::new();
-    pairs
-        .iter()
-        .map(|pair| pair.beacon)
-        .filter(|beacon| beacon.y == row)
-        .for_each(|beacon| {
-            beacons.insert(beacon.x);
-        });
+fn solution_part_2(filename: &str, size: i32) -> i64 {
+    // parse input
+    let input = std::fs::read_to_string(filename).unwrap();
+    let pairs = input
+        .lines()
+        .map(|line| line.parse::<Pair>().unwrap())
+        .collect::<Vec<Pair>>();
 
-    covered - beacons.len()
+    let (row, col_ranges) = (0..=size)
+        .rev()
+        .map(|row| (row, get_covered_ranges(&pairs, row)))
+        .find(|(_, ranges)| ranges.len() > 1)
+        .unwrap();
+
+    // let mut beacons = HashSet::new();
+    // pairs
+    //     .iter()
+    //     .map(|pair| pair.beacon)
+    //     .filter(|beacon| beacon.y == size)
+    //     .for_each(|beacon| {
+    //         beacons.insert(beacon.x);
+    //     });
+
+    // covered - beacons.len()
+    let col = col_ranges.first().unwrap().end ;
+
+    i64::from(col) * 4_000_000 + i64::from(row)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -153,9 +186,9 @@ mod tests {
         assert_eq!(result, 26);
     }
 
-    // #[test]
-    // fn it_works_part_2() {
-    //     let result = solution_part_2("./input/day15.test.txt");
-    //     assert_eq!(result, 56000011);
-    // }
+    #[test]
+    fn it_works_part_2() {
+        let result = solution_part_2("./input/day15.test.txt", 20);
+        assert_eq!(result, 56000011);
+    }
 }
